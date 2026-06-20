@@ -542,8 +542,9 @@ document.getElementById('btnNext').addEventListener('click', function() {
     if (!info) continue;
     has = true;
     for (var s = 0; s < info.items.length; s++) {
-      var sub = info.items[s]; // [detail, qp, mat]
-      var detail = sub[0], qp = sub[1], mat = sub[2];
+      var sub = info.items[s]; // [detail, qp, mat, sub_code]
+      var detail = sub[0] + (sub[3] ? ' (Legend ' + sub[3] + ')' : '');
+      var qp = sub[1], mat = sub[2];
       var tq = qty * qp;
       var key = (mat !== 'blank' ? mat : '') + '||' + detail;
       if (items[key]) items[key].qty += tq;
