@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Manual Requisition - AR</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; font-size: 12px; background: #eaf0f6; min-height: 100vh; }
+@media print { body { background: white !important; } }
+.page { display: none; min-height: 100vh; flex-direction: column; }
+.page.active { display: flex; }
+
+/* ===== HEADER / STEPBAR ===== */
+.hdr { background: linear-gradient(135deg,#1a5276,#2e86c1); color:white; padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+.hdr h1 { font-size:16px; }
+.step-badge { font-size:11px; background:rgba(255,255,255,0.18); padding:3px 12px; border-radius:20px; }
+.stepbar { background:#2e86c1; padding:0 20px; display:flex; align-items:center; }
+.s-item { display:flex; align-items:center; padding:9px 0; }
+.s-circle { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; border:2px solid rgba(255,255,255,0.4); color:rgba(255,255,255,0.5); }
+.s-circle.act { background:white; color:#1a5276; border-color:white; }
+.s-circle.done { background:#27ae60; border-color:#27ae60; color:white; }
+.s-label { margin-left:7px; color:rgba(255,255,255,0.65); font-size:12px; }
+.s-label.act { color:white; font-weight:bold; }
+.s-arrow { width:36px; text-align:center; color:rgba(255,255,255,0.35); font-size:20px; }
+.content { flex:1; padding:16px 20px; }
+
+/* ===== BUTTONS ===== */
+.btn { padding:9px 20px; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:bold; transition:opacity 0.15s; }
+.btn:hover { opacity:0.88; }
+.btn-next { background:#27ae60; color:white; font-size:14px; padding:10px 26px; }
+.btn-back { background:#7f8c8d; color:white; }
+.btn-danger { background:#e74c3c; color:white; }
+.btn-print { background:#8e44ad; color:white; font-size:14px; padding:10px 26px; }
+.botbar { background:white; border-top:1px solid #dde; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
+
+/* ===== INPUT PAGE ===== */
+.info-box { background:#fef9e7; border-left:4px solid #f0c030; border-radius:4px; padding:9px 13px; margin-bottom:14px; color:#7d6608; font-size:12px; }
+.card { background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); overflow:hidden; }
+.card-hdr { background:#2e86c1; color:white; padding:9px 14px; font-weight:bold; font-size:13px; }
+table.itbl { border-collapse:collapse; width:100%; }
+table.itbl th { background:#34495e; color:white; padding:7px 9px; text-align:center; font-size:12px; white-space:nowrap; }
+table.itbl td { padding:4px 7px; border-bottom:1px solid #eee; vertical-align:middle; }
+table.itbl tbody tr:hover td { background:#f0f7ff; }
+table.itbl td:first-child { background:#f4f6f8; text-align:center; color:#999; width:34px; font-size:11px; border-right:1px solid #e8e8e8; }
+.linp { width:130px; padding:5px 8px; border:2px solid #f0c030; background:#fffde7; border-radius:5px; font-size:13px; outline:none; }
+.linp:focus { border-color:#2e86c1; background:#eaf4fc; }
+.linp.ok { border-color:#27ae60; background:#eafaf1; }
+.linp.err { border-color:#e74c3c; background:#fdecea; }
+.qinp { width:78px; padding:5px 8px; border:2px solid #f0c030; background:#fffde7; border-radius:5px; font-size:13px; text-align:right; outline:none; }
+.qinp:focus { border-color:#2e86c1; }
+.dprev { color:#444; font-size:11px; max-width:420px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mprev { color:#888; font-size:11px; font-family:monospace; }
+.acwrap { position:relative; display:inline-block; }
+.aclist { position:absolute; top:100%; left:0; background:white; border:1px solid #2e86c1; border-radius:6px; max-height:210px; overflow-y:auto; z-index:9999; min-width:340px; display:none; box-shadow:0 6px 20px rgba(0,0,0,0.15); }
+.acitem { padding:6px 11px; cursor:pointer; font-size:12px; border-bottom:1px solid #f5f5f5; }
+.acitem:hover { background:#eaf4fc; }
+.accode { font-weight:bold; color:#1a5276; }
+.acdesc { color:#666; font-size:11px; display:block; margin-top:1px; }
+
+/* ===== REPORT FORM ===== */
+.rpt-outer { max-width:900px; margin:0 auto; }
+
+/* Main form table */
+table.rf {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #000;
+  font-size: 11px;
+}
+table.rf td, table.rf th {
+  border: 1px solid #999;
+  padding: 3px 6px;
+  vertical-align: middle;
+}
+table.rf .noborder { border: none; }
+table.rf .bb { border-bottom: 1px solid #000; }
+table.rf .bt { border-top: 1px solid #000; }
+table.rf .bl { border-left: 1px solid #000; }
+table.rf .br { border-right: 1px solid #000; }
+table.rf .bold { font-weight: bold; }
+table.rf .center { text-align: center; }
+table.rf .right { text-align: right; }
+
+.rf-title { font-size: 14px; font-weight: bold; text-align: center; padding: 6px; border-bottom: 2px solid #000; position: relative; }
+
+/* Input fields inside report */
+.ri { border: none; border-bottom: 1px solid #555; background: #fffde7; outline: none; font-size: 11px; padding: 1px 3px; width: 100%; font-family: Arial, sans-serif; }
+.ri:focus { background: #eaf4fc; }
+.ri-nb { border: none; background: transparent; outline: none; font-size: 11px; padding: 1px 3px; width: 100%; font-family: Arial, sans-serif; }
+
+/* Account assignment boxes */
+.acc-box { border: 1px solid #999; min-height: 16px; }
+
+/* Item rows */
+.item-row td { border: 1px solid #999; vertical-align: top; padding: 3px 5px; }
+.item-content { min-height: 40px; }
+.item-dashed { border-top: 1px dashed #aaa; margin-top: 4px; padding-top: 2px; font-size: 10px; color: #bbb; }
+
+/* Signature boxes */
+.sig-id { border: 1px solid #999; min-height: 18px; font-size: 11px; text-align: center; }
+.sig-name { border: 1px solid #999; min-height: 18px; font-size: 11px; text-align: center; }
+
+/* print container - hidden on screen */
+#print-pages { display: none; }
+.print-page { page-break-after: always; }
+.print-page:last-child { page-break-after: avoid; }
+
+@media print {
+  @page { margin: 0; }
+  #pg1, .botbar, .hdr, .stepbar { display: none !important; }
+  #pg2 { display: block !important; }
+  #pg3 { display: none !important; }
+  .content { padding: 2px 4px; }
+  .rpt-outer { display: none !important; }
+  #print-pages { display: block !important; padding: 8mm; box-sizing: border-box; background: white !important; }
+  .print-page { padding: 4mm 0; }
+  /* remove all background colors when printing */
+  * { background: white !important; -webkit-print-color-adjust: economy; print-color-adjust: economy; }
+  /* keep table borders and text visible */
+  table.rf, table.rf td, table.rf th { border-color: #999 !important; color: black !important; }
+  /* inputs: white background, no yellow */
+  .ri, .ri-nb, input { background: white !important; }
+  /* hide placeholder text when printing */
+  input::placeholder { color: transparent !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-msg" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.92);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:9999;color:#1a5276">
+  &#9696; กำลังโหลดข้อมูล legend...
+</div>
+
+<!-- PAGE 1 INPUT -->
+<div id="pg1" class="page active">
+  <div class="hdr">
+    <h1>&#128203; Manual Requisition Generator</h1>
+    <span class="step-badge">ขั้นตอนที่ 1 / 2</span>
+  </div>
+  <div class="stepbar">
+    <div class="s-item"><div class="s-circle act">1</div><div class="s-label act">กรอกข้อมูล Legend</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle">2</div><div class="s-label">ใบขอเบิกพัสดุ</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle">3</div><div class="s-label">กรอกเลขใบ MR</div></div>
+  </div>
+  <div class="content">
+    <div class="info-box">&#128161; พิมพ์ <strong>Legend code</strong> ในช่องสีเหลือง จากนั้นกรอก <strong>จำนวน</strong> — ระบบค้นหาให้อัตโนมัติ</div>
+    <div class="card">
+      <div class="card-hdr">&#9997; รายการ Legend &nbsp;<span id="ecnt" style="font-size:11px;opacity:0.8"></span></div>
+      <div style="overflow-x:auto">
+        <table class="itbl">
+          <thead><tr><th>#</th><th>Legend Code &#9733;</th><th>จำนวน &#9733;</th><th>รายละเอียด</th><th>Material No.</th></tr></thead>
+          <tbody id="ibody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="botbar">
+    <button class="btn btn-danger" id="btnClear">&#10006; ล้างทั้งหมด</button>
+    <button class="btn btn-next" id="btnNext">ถัดไป: ดูใบขอเบิก &#9654;</button>
+  </div>
+</div>
+
+<!-- PAGE 2 REPORT -->
+<div id="pg2" class="page">
+  <div class="hdr">
+    <h1>&#128196; Manual Requisition</h1>
+    <span class="step-badge">ขั้นตอนที่ 2 / 3</span>
+  </div>
+  <div class="stepbar">
+    <div class="s-item"><div class="s-circle done">&#10003;</div><div class="s-label">กรอกข้อมูล Legend</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle act">2</div><div class="s-label act">ใบขอเบิกพัสดุ</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle">3</div><div class="s-label">กรอกเลขใบ MR</div></div>
+  </div>
+  <div class="content">
+    <div class="rpt-outer">
+
+      <table class="rf">
+      <thead>
+        <!-- TITLE -->
+        <tr>
+          <td colspan="14" class="rf-title">Manual Requisition</td>
+        </tr>
+
+        <!-- PLANT ROW -->
+        <tr>
+          <td colspan="5" style="border:none"></td>
+          <td colspan="3" class="center bold" style="border-left:1px solid #999">Plant</td>
+          <td colspan="6" style="border-left:1px solid #999"><input class="ri" id="rpt_plant" placeholder=""></td>
+        </tr>
+
+        <!-- CHECKBOXES ROW -->
+        <tr>
+          <td colspan="14" style="padding:5px 8px; border-top:1px solid #000; border-bottom:1px solid #000">
+            <label style="margin-right:12px"><input type="checkbox"> เบิกพัสดุสำรอง</label>
+            <label style="margin-right:12px"><input type="checkbox"> เบิกซื้องานตรง</label>
+            <label style="margin-right:12px"><input type="checkbox"> คืนคลัง</label>
+            <label style="margin-right:12px"><input type="checkbox"> การให้หน่วยงานภายนอกยืมพัสดุ</label>
+            <label style="margin-right:12px"><input type="checkbox"> โอนพัสดุ</label>
+            <label style="margin-right:12px"><input type="checkbox"> ปรับปรุงบัญชี</label>
+            <label><input type="checkbox"> รับจากการผลิต</label>
+          </td>
+        </tr>
+
+        <!-- MVT / SLOC -->
+        <tr>
+          <td colspan="1" style="border:none"></td>
+          <td colspan="5" class="right bold" style="border-right:none">ประเภทการเบิก (MVT Type)</td>
+          <td colspan="4" style="border-left:none"><input class="ri" id="rpt_mvt"></td>
+          <td colspan="2" class="right bold" style="border-right:none">คลังพัสดุ (SLoc.)</td>
+          <td colspan="2" style="border-left:none"><input class="ri" id="rpt_sloc"></td>
+        </tr>
+
+        <!-- REQUESTER / APPROVER / DATE -->
+        <tr>
+          <td colspan="1" style="border:none"></td>
+          <td colspan="1" class="bold">ผู้ขอเบิก</td>
+          <td colspan="3"><input class="ri" id="rpt_req" placeholder="ชื่อ-นามสกุล / รหัส"></td>
+          <td colspan="1" class="bold" style="text-align:center">ผู้อนุมัติ</td>
+          <td colspan="4"><input class="ri" id="rpt_apr" placeholder="ชื่อ-นามสกุล / รหัส"></td>
+          <td colspan="2" class="right bold" style="border-right:none">วันที่ต้องการ</td>
+          <td colspan="2" style="border-left:none"><input class="ri" id="rpt_date" type="date"></td>
+        </tr>
+
+        <!-- ACCOUNT ASSIGNMENT - Cost Center -->
+        <tr>
+          <td colspan="7" style="border-top:1px solid #000; padding:3px 8px">
+            <label><input type="checkbox"> Cost Center</label>
+          </td>
+          <td colspan="7" style="border-top:1px solid #000; border-left:1px solid #000">
+            <input class="ri-nb" id="acc_cc">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="7" style="padding:3px 8px"><label><input type="checkbox"> WBS</label></td>
+          <td colspan="7" style="border-left:1px solid #000"><input class="ri-nb" id="acc_wbs"></td>
+        </tr>
+        <tr>
+          <td colspan="7" style="padding:3px 8px"><label><input type="checkbox"> Network</label></td>
+          <td colspan="7" style="border-left:1px solid #000"><input class="ri-nb" id="acc_net"></td>
+        </tr>
+        <tr>
+          <td colspan="7" style="padding:3px 8px">
+            <label><input type="checkbox"> PM Order</label>
+            <label style="margin-left:8px"><input type="checkbox"> PP Order</label>
+            <label style="margin-left:8px"><input type="checkbox"> CO Prod. Order</label>
+            <label style="margin-left:8px"><input type="checkbox"> Internal Order</label>
+          </td>
+          <td colspan="7" style="border-left:1px solid #000"><input class="ri-nb" id="acc_ord"></td>
+        </tr>
+        <tr>
+          <td colspan="7" style="padding:3px 8px"><label><input type="checkbox"> Sales Order</label></td>
+          <td colspan="7" style="border-left:1px solid #000"><input class="ri-nb" id="acc_so"></td>
+        </tr>
+        <tr>
+          <td colspan="7" style="padding:3px 8px; border-bottom:1px solid #000"><label><input type="checkbox"> Asset No.</label></td>
+          <td colspan="7" style="border-left:1px solid #000; border-bottom:1px solid #000"><input class="ri-nb" id="acc_asset"></td>
+        </tr>
+
+        <!-- เพื่อการใช้งาน -->
+        <tr>
+          <td colspan="2" class="bold" style="white-space:nowrap">เพื่อการใช้งาน :</td>
+          <td colspan="12"><input class="ri" id="rpt_use" placeholder="สฟ. / Job No. / รายละเอียดงาน"></td>
+        </tr>
+
+        <!-- ทะเบียน -->
+        <tr>
+          <td colspan="2" class="bold" style="white-space:nowrap">ทะเบียนขนส่ง :</td>
+          <td colspan="2"><input class="ri" id="rpt_tr"></td>
+          <td colspan="1" style="border:none"></td>
+          <td colspan="2" class="bold right" style="white-space:nowrap; border-right:none">ทะเบียนภายใน :</td>
+          <td colspan="2" style="border-left:none"><input class="ri" id="rpt_in"></td>
+          <td colspan="1" style="border:none"></td>
+          <td colspan="2" class="bold right" style="white-space:nowrap; border-right:none">เลขมิเตอร์ :</td>
+          <td colspan="2" style="border-left:none"><input class="ri" id="rpt_mt"></td>
+        </tr>
+
+        <!-- Mat Doc -->
+        <tr>
+          <td colspan="2" class="bold" style="white-space:nowrap">Mat. Doc. :</td>
+          <td colspan="3"><input class="ri" id="rpt_md"></td>
+          <td colspan="3" style="border:none"></td>
+          <td colspan="6" class="center" style="color:#666; font-size:10px">(กรณีปรับปรุงบัญชี)</td>
+        </tr>
+
+        <!-- Plant/Sloc headers for transfer -->
+        <tr style="font-size:10px">
+          <td colspan="2" style="border:none"></td>
+          <td colspan="1" class="center bold" style="border:1px solid #999">Plant</td>
+          <td colspan="2" class="center bold" style="border:1px solid #999">Sloc.</td>
+          <td colspan="2" style="border:none"></td>
+          <td colspan="1" class="center bold" style="border:1px solid #999">Plant</td>
+          <td colspan="2" class="center bold" style="border:1px solid #999">Sloc.</td>
+          <td colspan="4" style="border:none"></td>
+        </tr>
+
+        <!-- คลังพัสดุผู้โอน -->
+        <tr>
+          <td colspan="2" class="bold right" style="white-space:nowrap; border-right:none">คลังพัสดุผู้โอน :</td>
+          <td colspan="1" style="border:1px solid #999; border-left:none"><input class="ri-nb" id="xfer_from_plant"></td>
+          <td colspan="2" style="border:1px solid #999"><input class="ri-nb" id="xfer_from_sloc"></td>
+          <td colspan="2" class="bold right" style="white-space:nowrap; border-right:none">คลังพัสดุผู้รับโอน :</td>
+          <td colspan="1" style="border:1px solid #999; border-left:none"><input class="ri-nb" id="xfer_to_plant"></td>
+          <td colspan="2" style="border:1px solid #999"><input class="ri-nb" id="xfer_to_sloc"></td>
+          <td colspan="4" class="center" style="color:#666; font-size:10px">(กรณีการโอนพัสดุ)</td>
+        </tr>
+
+        <!-- SIGNATURES -->
+        <tr style="border-top:1px solid #000">
+          <td colspan="2" class="right bold" style="white-space:nowrap; border-right:none; border-top:1px solid #000">อนุมัติ :</td>
+          <td colspan="1" style="border:1px solid #999; border-top:1px solid #000"><input class="ri-nb" id="sig_a_id" placeholder="รหัส"></td>
+          <td colspan="3" style="border:1px solid #999; border-top:1px solid #000"><input class="ri-nb" id="sig_a_name" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none; border-top:1px solid #000"></td>
+          <td colspan="4" style="border:1px solid #999; border-top:1px solid #000"><input class="ri-nb" id="sig_a_name2" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none; border-top:1px solid #000"></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="right bold" style="white-space:nowrap; border-right:none">ผู้รับพัสดุ / ผู้ส่งคืน :</td>
+          <td colspan="1" style="border:1px solid #999"><input class="ri-nb" id="sig_b_id" placeholder="รหัส"></td>
+          <td colspan="3" style="border:1px solid #999"><input class="ri-nb" id="sig_b_name" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none"></td>
+          <td colspan="4" style="border:1px solid #999"><input class="ri-nb" id="sig_b_name2" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none"></td>
+        </tr>
+        <tr>
+          <td colspan="2" class="right bold" style="white-space:nowrap; border-right:none">ผู้จ่าย / รับคืน / ปรับปรุงบัญชี :</td>
+          <td colspan="1" style="border:1px solid #999"><input class="ri-nb" id="sig_c_id" placeholder="รหัส"></td>
+          <td colspan="3" style="border:1px solid #999"><input class="ri-nb" id="sig_c_name" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none"></td>
+          <td colspan="4" style="border:1px solid #999"><input class="ri-nb" id="sig_c_name2" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none"></td>
+        </tr>
+        <tr style="border-bottom:1px solid #000">
+          <td colspan="2" class="right bold" style="white-space:nowrap; border-right:none; border-bottom:1px solid #000">ผู้ส่งพัสดุ :</td>
+          <td colspan="1" style="border:1px solid #999; border-bottom:1px solid #000"><input class="ri-nb" id="sig_d_id" placeholder="รหัส"></td>
+          <td colspan="3" style="border:1px solid #999; border-bottom:1px solid #000"><input class="ri-nb" id="sig_d_name" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none; border-bottom:1px solid #000"></td>
+          <td colspan="4" style="border:1px solid #999; border-bottom:1px solid #000"><input class="ri-nb" id="sig_d_name2" placeholder="ชื่อ-นามสกุล"></td>
+          <td colspan="2" style="border:none; border-bottom:1px solid #000"></td>
+        </tr>
+
+        <!-- ITEMS HEADER -->
+        <tr style="background:#d0d8e8; border-top:2px solid #000">
+          <td colspan="1" class="center bold" style="border:1px solid #555; width:36px">ลำดับที่</td>
+          <td colspan="3" class="center bold" style="border:1px solid #555">รหัสพัสดุ /<br>Material Group</td>
+          <td colspan="7" class="center bold" style="border:1px solid #555">ชื่อพัสดุ</td>
+          <td colspan="1" class="center bold" style="border:1px solid #555">หน่วย<br>นับ</td>
+          <td colspan="1" class="center bold" style="border:1px solid #555">จำนวน<br>ขอเบิก</td>
+          <td colspan="1" class="center bold" style="border:1px solid #555">จำนวน<br>จ่าย</td>
+        </tr>
+
+      </thead>
+        <!-- ITEMS BODY -->
+        <tbody id="rbody"></tbody>
+
+      </table>
+    </div>
+  </div>
+  <!-- generated print pages (hidden on screen) -->
+  <div id="print-pages"></div>
+
+  <div class="botbar">
+    <button class="btn btn-back" id="btnBack">&#9664; ย้อนกลับ แก้ไข</button>
+    <button class="btn btn-next" id="btnToMR">ถัดไป: กรอกเลขใบ MR &#9654;</button>
+  </div>
+</div>
+
+<!-- PAGE 3 MR NUMBER -->
+<div id="pg3" class="page">
+  <div class="hdr">
+    <h1>&#128203; กรอกเลขที่ใบเบิก</h1>
+    <span class="step-badge">ขั้นตอนที่ 3 / 3</span>
+  </div>
+  <div class="stepbar">
+    <div class="s-item"><div class="s-circle done">&#10003;</div><div class="s-label">กรอกข้อมูล Legend</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle done">&#10003;</div><div class="s-label">ใบขอเบิกพัสดุ</div></div>
+    <div class="s-arrow">&#8250;</div>
+    <div class="s-item"><div class="s-circle act">3</div><div class="s-label act">กรอกเลขใบ MR</div></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="card-hdr">&#128196; ข้อมูลใบเบิก</div>
+      <div style="padding:16px">
+        <div id="mr-page-info" style="font-size:15px; margin-bottom:20px; padding:12px 16px; background:#e8f0fe; border-left:4px solid #3b6fd4; border-radius:4px"></div>
+        <label style="font-weight:bold; font-size:13px">กรอกเลขที่ใบเบิก (ต้องตรงกับจำนวนแผ่นพอดี)</label>
+        <div style="font-size:11px; color:#666; margin:4px 0 10px">ตัวอย่าง: <code>0001-0005,0010-0014</code> (รวมกันต้องได้จำนวนแผ่นพอดี)</div>
+        <input id="mr-input" type="text" placeholder="เช่น 0001-0005,0010-0014"
+          style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; border:2px solid #ccc; border-radius:6px; font-family:monospace">
+        <div id="mr-error" style="color:#c00; font-size:12px; margin-top:6px; min-height:18px"></div>
+        <div id="mr-preview" style="margin-top:12px; font-size:12px; color:#555; line-height:1.8"></div>
+      </div>
+    </div>
+  </div>
+  <div class="botbar">
+    <button class="btn btn-back" id="btnBackToReport">&#9664; ย้อนกลับ</button>
+    <button class="btn btn-print" id="btnPrint">&#128438; Print / Save PDF</button>
+  </div>
+</div>
+
+<script>
+// LD = [[legendA_code, [[detail, qp, mat], ...]], ...]
+var LD = [];
+var LM = {};
+var N = 50;
+
+function initLegend(data) {
+  LD = data;
+  for (var i = 0; i < LD.length; i++) {
+    LM[LD[i][0].toUpperCase()] = { code: LD[i][0], items: LD[i][1] };
+  }
+  document.getElementById('loading-msg').style.display = 'none';
+  build();
+}
+
+fetch('legend.json')
+  .then(function(r) { return r.json(); })
+  .then(initLegend)
+  .catch(function() {
+    document.getElementById('loading-msg').textContent = 'โหลดข้อมูล legend ไม่ได้ — กรุณาตรวจสอบว่า legend.json อยู่ในโฟลเดอร์เดียวกัน';
+  });
+
+function build() {
+  var tb = document.getElementById('ibody');
+  var rows = [];
+  for (var i = 1; i <= N; i++) {
+    rows.push(
+      '<tr>' +
+      '<td>' + i + '</td>' +
+      '<td><div class="acwrap">' +
+        '<input class="linp" id="lg' + i + '" autocomplete="off" placeholder="เช่น 28.99A">' +
+        '<div class="aclist" id="ac' + i + '"></div>' +
+      '</div></td>' +
+      '<td><input class="qinp" id="qt' + i + '" type="number" min="0" step="1" placeholder="0"></td>' +
+      '<td><div class="dprev" id="dp' + i + '"></div></td>' +
+      '<td><div class="mprev" id="mp' + i + '"></div></td>' +
+      '</tr>'
+    );
+  }
+  tb.innerHTML = rows.join('');
+  for (var j = 1; j <= N; j++) {
+    (function(idx) {
+      var linp = document.getElementById('lg' + idx);
+      var qinp = document.getElementById('qt' + idx);
+      linp.addEventListener('input', function() { onLI(linp, idx); });
+      linp.addEventListener('focus', function() { showAc(idx, linp.value.trim().toUpperCase()); });
+      linp.addEventListener('blur', function() { setTimeout(function() { var a = document.getElementById('ac' + idx); if (a) a.style.display = 'none'; }, 180); });
+      qinp.addEventListener('input', ucnt);
+    })(j);
+  }
+}
+
+function onLI(el, i) {
+  var v = el.value.trim().toUpperCase();
+  upRow(i, v); showAc(i, v); ucnt();
+}
+
+function showAc(i, v) {
+  var ac = document.getElementById('ac' + i);
+  if (!v) { ac.style.display = 'none'; return; }
+  var ms = [];
+  for (var k = 0; k < LD.length && ms.length < 20; k++) {
+    if (LD[k][0].toUpperCase().indexOf(v) >= 0) ms.push(LD[k]);
+  }
+  if (!ms.length) { ac.style.display = 'none'; return; }
+  var h = [];
+  for (var m = 0; m < ms.length; m++) {
+    var firstDetail = LD[m][1] && LD[m][1][0] ? LD[m][1][0][0] : '';
+    h.push('<div class="acitem" data-code="' + ms[m][0] + '" data-row="' + i + '"><span class="accode">' + ms[m][0] + '</span><span class="acdesc">' + firstDetail.substring(0,85) + '</span></div>');
+  }
+  ac.innerHTML = h.join('');
+  ac.style.display = 'block';
+  var acitems = ac.querySelectorAll('.acitem');
+  for (var n = 0; n < acitems.length; n++) {
+    (function(el) {
+      el.addEventListener('mousedown', function() {
+        var row = parseInt(el.getAttribute('data-row'));
+        var code = el.getAttribute('data-code');
+        document.getElementById('lg' + row).value = code;
+        document.getElementById('ac' + row).style.display = 'none';
+        upRow(row, code.toUpperCase());
+        document.getElementById('qt' + row).focus();
+        ucnt();
+      });
+    })(acitems[n]);
+  }
+}
+
+function upRow(i, code) {
+  var el = document.getElementById('lg' + i);
+  var info = LM[code];
+  if (info) {
+    el.className = 'linp ok';
+    var subcount = info.items.length;
+    document.getElementById('dp' + i).textContent = subcount + ' รายการ: ' + info.items[0][0].substring(0, 60) + (subcount > 1 ? '...' : '');
+    document.getElementById('mp' + i).textContent = '';
+  } else if (code) {
+    el.className = 'linp err';
+    document.getElementById('dp' + i).textContent = 'ไม่พบ Legend นี้';
+    document.getElementById('mp' + i).textContent = '';
+  } else {
+    el.className = 'linp';
+    document.getElementById('dp' + i).textContent = '';
+    document.getElementById('mp' + i).textContent = '';
+  }
+}
+
+function ucnt() {
+  var n = 0;
+  for (var i = 1; i <= N; i++) {
+    var code = (document.getElementById('lg' + i).value || '').trim().toUpperCase();
+    var qty = parseFloat(document.getElementById('qt' + i).value) || 0;
+    if (code && LM[code] && qty > 0) n++;
+  }
+  document.getElementById('ecnt').textContent = n ? '(' + n + ' รายการที่ถูกต้อง)' : '';
+}
+
+document.getElementById('btnClear').addEventListener('click', function() {
+  if (!confirm('ล้างข้อมูลทั้งหมดใช่ไหม?')) return;
+  for (var i = 1; i <= N; i++) {
+    document.getElementById('lg' + i).value = '';
+    document.getElementById('qt' + i).value = '';
+    document.getElementById('lg' + i).className = 'linp';
+    document.getElementById('dp' + i).textContent = '';
+    document.getElementById('mp' + i).textContent = '';
+  }
+  ucnt();
+});
+
+document.getElementById('btnNext').addEventListener('click', function() {
+  var items = {};
+  var has = false;
+  for (var i = 1; i <= N; i++) {
+    var code = (document.getElementById('lg' + i).value || '').trim().toUpperCase();
+    var qty = parseFloat(document.getElementById('qt' + i).value) || 0;
+    if (!code || qty <= 0) continue;
+    var info = LM[code];
+    if (!info) continue;
+    has = true;
+    for (var s = 0; s < info.items.length; s++) {
+      var sub = info.items[s]; // [detail, qp, mat]
+      var detail = sub[0], qp = sub[1], mat = sub[2];
+      var tq = qty * qp;
+      var key = (mat !== 'blank' ? mat : '') + '||' + detail;
+      if (items[key]) items[key].qty += tq;
+      else items[key] = { mat: mat, detail: detail, qty: tq };
+    }
+  }
+  if (!has) { alert('กรุณากรอก Legend code และจำนวนที่ถูกต้องอย่างน้อย 1 รายการ'); return; }
+
+  var list = Object.values(items);
+  var h = [];
+  var EMPTY_ROWS = 3;
+  var total = Math.max(list.length + EMPTY_ROWS, 5);
+
+  for (var j = 0; j < total; j++) {
+    if (j < list.length) {
+      var it = list[j];
+      var mat = it.mat === 'blank' ? '' : it.mat;
+      var q = (it.qty % 1 === 0) ? it.qty : it.qty.toFixed(2);
+      h.push(
+        '<tr>' +
+        '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; width:36px">' + (j+1) + '</td>' +
+        '<td colspan="3" style="border:1px solid #999; vertical-align:top; padding:4px 5px; font-family:monospace; font-size:11px">' + mat + '</td>' +
+        '<td colspan="7" style="border:1px solid #999; vertical-align:top; padding:4px 5px;">' +
+          '<div style="min-height:90px">' + it.detail + '</div>' +
+        '</td>' +
+        '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px">EA</td>' +
+        '<td colspan="1" style="border:1px solid #999; text-align:right; vertical-align:top; padding:4px 5px">' + q + '</td>' +
+        '<td colspan="1" style="border:1px solid #999; vertical-align:top; padding:4px 5px"></td>' +
+        '</tr>'
+      );
+    } else {
+      h.push(
+        '<tr>' +
+        '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; color:#bbb; width:36px">' + (j+1) + '</td>' +
+        '<td colspan="3" style="border:1px solid #999; min-height:50px; padding:4px 5px">&nbsp;</td>' +
+        '<td colspan="7" style="border:1px solid #999; padding:4px 5px;">' +
+          '<div style="min-height:90px"></div>' +
+        '</td>' +
+        '<td colspan="1" style="border:1px solid #999; padding:4px 3px"></td>' +
+        '<td colspan="1" style="border:1px solid #999; padding:4px 5px"></td>' +
+        '<td colspan="1" style="border:1px solid #999; padding:4px 5px"></td>' +
+        '</tr>'
+      );
+    }
+  }
+  document.getElementById('rbody').innerHTML = h.join('');
+  document.getElementById('pg1').classList.remove('active');
+  document.getElementById('pg2').classList.add('active');
+});
+
+document.getElementById('btnBack').addEventListener('click', function() {
+  document.getElementById('pg2').classList.remove('active');
+  document.getElementById('pg1').classList.add('active');
+});
+
+document.getElementById('btnToMR').addEventListener('click', function() {
+  var pageCount = countPrintPages();
+  document.getElementById('mr-page-info').innerHTML =
+    '&#128196; ใบเบิกพัสดุมีทั้งหมด <strong>' + pageCount + ' แผ่น</strong> — กรุณากรอกเลขที่ใบเบิกให้ครบ ' + pageCount + ' เลข';
+  document.getElementById('mr-input').value = '';
+  document.getElementById('mr-error').textContent = '';
+  document.getElementById('mr-preview').innerHTML = '';
+  document.getElementById('pg2').classList.remove('active');
+  document.getElementById('pg3').classList.add('active');
+});
+
+document.getElementById('btnBackToReport').addEventListener('click', function() {
+  document.getElementById('pg3').classList.remove('active');
+  document.getElementById('pg2').classList.add('active');
+});
+
+document.getElementById('mr-input').addEventListener('input', function() {
+  previewMR();
+});
+
+var ITEMS_PER_PAGE = 5;
+
+function countPrintPages() {
+  var allRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr'));
+  var realRows = allRows.filter(function(tr) {
+    return tr.textContent.trim() !== '' && !/^\s*\d*\s*$/.test(tr.textContent.trim());
+  });
+  return Math.ceil(realRows.length / ITEMS_PER_PAGE) || 1;
+}
+
+function parseMRRange(str) {
+  var nums = [];
+  var parts = str.split(',');
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i].trim();
+    if (!p) continue;
+    var dash = p.indexOf('-');
+    if (dash > 0) {
+      var a = parseInt(p.substring(0, dash), 10);
+      var b = parseInt(p.substring(dash + 1), 10);
+      if (isNaN(a) || isNaN(b) || b < a) return null;
+      for (var n = a; n <= b; n++) nums.push(n);
+    } else {
+      var n2 = parseInt(p, 10);
+      if (isNaN(n2)) return null;
+      nums.push(n2);
+    }
+  }
+  return nums;
+}
+
+function padMR(n, sample) {
+  var s = String(n);
+  var pad = sample ? String(parseInt(sample, 10)).length : 4;
+  var width = Math.max(sample ? sample.length : 4, s.length);
+  while (s.length < width) s = '0' + s;
+  return s;
+}
+
+function getMRPad(str) {
+  var first = str.split(',')[0].trim().split('-')[0].trim();
+  return first.length || 4;
+}
+
+function formatMR(n, width) {
+  var s = String(n);
+  while (s.length < width) s = '0' + s;
+  return s;
+}
+
+function previewMR() {
+  var val = document.getElementById('mr-input').value.trim();
+  var errEl = document.getElementById('mr-error');
+  var prevEl = document.getElementById('mr-preview');
+  errEl.textContent = '';
+  prevEl.innerHTML = '';
+  if (!val) return;
+
+  var pageCount = countPrintPages();
+  var nums = parseMRRange(val);
+  if (!nums) {
+    errEl.textContent = 'รูปแบบไม่ถูกต้อง ตัวอย่าง: 0001-0005,0010-0014';
+    return;
+  }
+  var width = getMRPad(val);
+  if (nums.length !== pageCount) {
+    errEl.textContent = 'จำนวนเลขที่กรอก (' + nums.length + ') ไม่ตรงกับจำนวนแผ่น (' + pageCount + ')';
+    return;
+  }
+  var lines = [];
+  for (var i = 0; i < nums.length; i++) {
+    lines.push('แผ่น ' + (i+1) + ' → เลขที่ใบเบิก <strong>' + formatMR(nums[i], width) + '</strong>');
+  }
+  prevEl.innerHTML = lines.join('<br>');
+}
+
+function cloneTheadWithValues(thead) {
+  var theadClone = thead.cloneNode(true);
+  var srcInputs = thead.querySelectorAll('input');
+  var dstInputs = theadClone.querySelectorAll('input');
+  for (var i = 0; i < srcInputs.length; i++) {
+    if (!dstInputs[i]) continue;
+    if (srcInputs[i].type === 'checkbox') dstInputs[i].checked = srcInputs[i].checked;
+    else dstInputs[i].value = srcInputs[i].value;
+  }
+  return theadClone;
+}
+
+function buildPrintPages(mrNumbers, mrWidth) {
+  var container = document.getElementById('print-pages');
+  container.innerHTML = '';
+
+  var thead = document.querySelector('table.rf thead');
+  var allRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr'));
+  if (!thead || allRows.length === 0) return;
+
+  var realRows = allRows.filter(function(tr) {
+    return tr.textContent.trim() !== '' && !/^\s*\d*\s*$/.test(tr.textContent.trim());
+  });
+  var emptyRows = allRows.filter(function(tr) {
+    return realRows.indexOf(tr) === -1;
+  });
+
+  var pages = Math.ceil(realRows.length / ITEMS_PER_PAGE) || 1;
+
+  for (var p = 0; p < pages; p++) {
+    var pageDiv = document.createElement('div');
+    pageDiv.className = 'print-page';
+
+    var tbl = document.createElement('table');
+    tbl.className = 'rf';
+    tbl.style.width = '100%';
+
+    var theadClone = cloneTheadWithValues(thead);
+    tbl.appendChild(theadClone);
+
+    var tbody = document.createElement('tbody');
+    var start = p * ITEMS_PER_PAGE;
+    var end = Math.min(start + ITEMS_PER_PAGE, realRows.length);
+    for (var r = start; r < end; r++) {
+      tbody.appendChild(realRows[r].cloneNode(true));
+    }
+    if (p === pages - 1) {
+      for (var e = 0; e < emptyRows.length; e++) {
+        tbody.appendChild(emptyRows[e].cloneNode(true));
+      }
+    }
+    tbl.appendChild(tbody);
+
+    /* MR number label — outside the table, top-right */
+    if (mrNumbers && mrNumbers[p] !== undefined) {
+      var mrDiv = document.createElement('div');
+      mrDiv.style.cssText = 'text-align:right; font-size:11px; font-family:Arial,sans-serif; margin-bottom:2px; padding-right:2px';
+      mrDiv.textContent = 'เลขที่ใบเบิก ' + formatMR(mrNumbers[p], mrWidth);
+      pageDiv.appendChild(mrDiv);
+    }
+
+    pageDiv.appendChild(tbl);
+    container.appendChild(pageDiv);
+  }
+}
+
+document.getElementById('btnPrint').addEventListener('click', function() {
+  var val = document.getElementById('mr-input').value.trim();
+  var pageCount = countPrintPages();
+  var nums = parseMRRange(val);
+  if (!nums || nums.length !== pageCount) {
+    document.getElementById('mr-error').textContent = 'กรุณากรอกเลขที่ใบเบิกให้ครบและถูกต้องก่อน Print';
+    return;
+  }
+  var width = getMRPad(val);
+  buildPrintPages(nums, width);
+  window.print();
+});
+
+// build() is called after legend.json loads via fetch
+</script>
+</body>
+</html>
