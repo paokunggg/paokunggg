@@ -417,7 +417,7 @@ function initLegend(data) {
   build();
 }
 
-fetch('legend.json')
+fetch('legend.json?v=' + Date.now())
   .then(function(r) { return r.json(); })
   .then(initLegend)
   .catch(function() {
