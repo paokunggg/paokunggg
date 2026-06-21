@@ -347,10 +347,11 @@ table.rf .right { text-align: right; }
         <tr style="background:#d0d8e8; border-top:2px solid #000">
           <td colspan="1" class="center bold" style="border:1px solid #555; width:36px">ลำดับที่</td>
           <td colspan="3" class="center bold" style="border:1px solid #555">รหัสพัสดุ /<br>Material Group</td>
-          <td colspan="7" class="center bold" style="border:1px solid #555">ชื่อพัสดุ</td>
+          <td colspan="6" class="center bold" style="border:1px solid #555">ชื่อพัสดุ</td>
           <td colspan="1" class="center bold" style="border:1px solid #555">หน่วย<br>นับ</td>
           <td colspan="1" class="center bold" style="border:1px solid #555">จำนวน<br>ขอเบิก</td>
           <td colspan="1" class="center bold" style="border:1px solid #555">จำนวน<br>จ่าย</td>
+          <td colspan="1" class="center bold" style="border:1px solid #555">ราคา<br>ต่อหน่วย</td>
         </tr>
 
       </thead>
@@ -358,6 +359,11 @@ table.rf .right { text-align: right; }
         <tbody id="rbody"></tbody>
 
       </table>
+      <div style="display:flex; justify-content:space-between; font-size:10px; margin-top:6px; padding:0 2px">
+        <div>แยกส่ง : 1.คลังพัสดุ / จัดหา /คลังพัสดุผู้โอน<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ส่วนของเจ้าหน้าที่พัสดุ</div>
+        <div>2.ผู้ขอเบิก / คลังพัสดุผู้รับโอน / ผู้ส่งพัสดุ</div>
+        <div>Material Document :</div>
+      </div>
     </div>
   </div>
   <!-- generated print pages (hidden on screen) -->
@@ -567,11 +573,12 @@ document.getElementById('btnNext').addEventListener('click', function() {
         '<tr>' +
         '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; width:36px">' + (j+1) + '</td>' +
         '<td colspan="3" style="border:1px solid #999; vertical-align:top; padding:4px 5px; font-family:monospace; font-size:11px">' + mat + '</td>' +
-        '<td colspan="7" style="border:1px solid #999; vertical-align:top; padding:4px 5px;">' +
+        '<td colspan="6" style="border:1px solid #999; vertical-align:top; padding:4px 5px;">' +
           '<div style="min-height:90px">' + it.detail + '</div>' +
         '</td>' +
         '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px">EA</td>' +
         '<td colspan="1" style="border:1px solid #999; text-align:right; vertical-align:top; padding:4px 5px">' + q + '</td>' +
+        '<td colspan="1" style="border:1px solid #999; vertical-align:top; padding:4px 5px"></td>' +
         '<td colspan="1" style="border:1px solid #999; vertical-align:top; padding:4px 5px"></td>' +
         '</tr>'
       );
@@ -580,10 +587,11 @@ document.getElementById('btnNext').addEventListener('click', function() {
         '<tr>' +
         '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; color:#bbb; width:36px">' + (j+1) + '</td>' +
         '<td colspan="3" style="border:1px solid #999; min-height:50px; padding:4px 5px">&nbsp;</td>' +
-        '<td colspan="7" style="border:1px solid #999; padding:4px 5px;">' +
+        '<td colspan="6" style="border:1px solid #999; padding:4px 5px;">' +
           '<div style="min-height:90px"></div>' +
         '</td>' +
         '<td colspan="1" style="border:1px solid #999; padding:4px 3px"></td>' +
+        '<td colspan="1" style="border:1px solid #999; padding:4px 5px"></td>' +
         '<td colspan="1" style="border:1px solid #999; padding:4px 5px"></td>' +
         '<td colspan="1" style="border:1px solid #999; padding:4px 5px"></td>' +
         '</tr>'
@@ -748,6 +756,12 @@ function buildPrintPages(mrNumbers, mrWidth) {
       }
     }
     tbl.appendChild(tbody);
+
+    /* footer text below table */
+    var footer = document.createElement('div');
+    footer.style.cssText = 'display:flex; justify-content:space-between; font-size:10px; margin-top:6px; padding:0 2px';
+    footer.innerHTML = '<div>แยกส่ง : 1.คลังพัสดุ / จัดหา /คลังพัสดุผู้โอน<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ส่วนของเจ้าหน้าที่พัสดุ</div><div>2.ผู้ขอเบิก / คลังพัสดุผู้รับโอน / ผู้ส่งพัสดุ</div><div>Material Document :</div>';
+    pageDiv.appendChild(footer);
 
     /* MR number label — outside the table, top-right */
     if (mrNumbers && mrNumbers[p] !== undefined) {
