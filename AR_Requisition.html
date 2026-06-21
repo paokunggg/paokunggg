@@ -561,8 +561,11 @@ document.getElementById('btnNext').addEventListener('click', function() {
 
   var list = Object.values(items);
   var h = [];
-  var EMPTY_ROWS = 3;
-  var total = Math.max(list.length + EMPTY_ROWS, 5);
+  var ITEMS_PER_PAGE = 5;
+  var pages = Math.ceil(list.length / ITEMS_PER_PAGE) || 1;
+  var lastPageReal = list.length - (pages - 1) * ITEMS_PER_PAGE;
+  var EMPTY_ROWS = ITEMS_PER_PAGE - lastPageReal;
+  var total = list.length + EMPTY_ROWS;
 
   for (var j = 0; j < total; j++) {
     if (j < list.length) {
