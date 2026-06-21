@@ -570,7 +570,7 @@ document.getElementById('btnNext').addEventListener('click', function() {
       var mat = it.mat === 'blank' ? '' : it.mat;
       var q = (it.qty % 1 === 0) ? it.qty : it.qty.toFixed(2);
       h.push(
-        '<tr>' +
+        '<tr data-real="1">' +
         '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; width:36px">' + (j+1) + '</td>' +
         '<td colspan="3" style="border:1px solid #999; vertical-align:top; padding:4px 5px; font-family:monospace; font-size:11px">' + mat + '</td>' +
         '<td colspan="6" style="border:1px solid #999; vertical-align:top; padding:4px 5px;">' +
@@ -584,7 +584,7 @@ document.getElementById('btnNext').addEventListener('click', function() {
       );
     } else {
       h.push(
-        '<tr>' +
+        '<tr data-empty="1">' +
         '<td colspan="1" style="border:1px solid #999; text-align:center; vertical-align:top; padding:4px 3px; color:#bbb; width:36px">' + (j+1) + '</td>' +
         '<td colspan="3" style="border:1px solid #999; min-height:50px; padding:4px 5px">&nbsp;</td>' +
         '<td colspan="6" style="border:1px solid #999; padding:4px 5px;">' +
@@ -631,10 +631,7 @@ document.getElementById('mr-input').addEventListener('input', function() {
 var ITEMS_PER_PAGE = 5;
 
 function countPrintPages() {
-  var allRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr'));
-  var realRows = allRows.filter(function(tr) {
-    return tr.textContent.trim() !== '' && !/^\s*\d*\s*$/.test(tr.textContent.trim());
-  });
+  var realRows = document.querySelectorAll('#rbody tr[data-real]');
   return Math.ceil(realRows.length / ITEMS_PER_PAGE) || 1;
 }
 
@@ -721,15 +718,9 @@ function buildPrintPages(mrNumbers, mrWidth) {
   container.innerHTML = '';
 
   var thead = document.querySelector('table.rf thead');
-  var allRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr'));
-  if (!thead || allRows.length === 0) return;
-
-  var realRows = allRows.filter(function(tr) {
-    return tr.textContent.trim() !== '' && !/^\s*\d*\s*$/.test(tr.textContent.trim());
-  });
-  var emptyRows = allRows.filter(function(tr) {
-    return realRows.indexOf(tr) === -1;
-  });
+  var realRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr[data-real]'));
+  var emptyRows = Array.prototype.slice.call(document.querySelectorAll('#rbody tr[data-empty]'));
+  if (!thead || realRows.length === 0) return;
 
   var pages = Math.ceil(realRows.length / ITEMS_PER_PAGE) || 1;
 
