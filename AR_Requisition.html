@@ -757,12 +757,6 @@ function buildPrintPages(mrNumbers, mrWidth) {
     }
     tbl.appendChild(tbody);
 
-    /* footer text below table */
-    var footer = document.createElement('div');
-    footer.style.cssText = 'display:flex; justify-content:space-between; font-size:10px; margin-top:6px; padding:0 2px';
-    footer.innerHTML = '<div>แยกส่ง : 1.คลังพัสดุ / จัดหา /คลังพัสดุผู้โอน<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ส่วนของเจ้าหน้าที่พัสดุ</div><div>2.ผู้ขอเบิก / คลังพัสดุผู้รับโอน / ผู้ส่งพัสดุ</div><div>Material Document :</div>';
-    pageDiv.appendChild(footer);
-
     /* MR number label — outside the table, top-right */
     if (mrNumbers && mrNumbers[p] !== undefined) {
       var mrDiv = document.createElement('div');
@@ -772,6 +766,13 @@ function buildPrintPages(mrNumbers, mrWidth) {
     }
 
     pageDiv.appendChild(tbl);
+
+    /* footer text below table */
+    var footer = document.createElement('div');
+    footer.style.cssText = 'display:flex; justify-content:space-between; font-size:10px; margin-top:6px; padding:0 2px';
+    footer.innerHTML = '<div>แยกส่ง : 1.คลังพัสดุ / จัดหา /คลังพัสดุผู้โอน<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ส่วนของเจ้าหน้าที่พัสดุ</div><div>2.ผู้ขอเบิก / คลังพัสดุผู้รับโอน / ผู้ส่งพัสดุ</div><div>Material Document :</div>';
+    pageDiv.appendChild(footer);
+
     container.appendChild(pageDiv);
   }
 }
