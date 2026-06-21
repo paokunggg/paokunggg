@@ -122,6 +122,8 @@ table.rf .right { text-align: right; }
   .ri, .ri-nb, input { background: white !important; }
   /* hide placeholder text when printing */
   input::placeholder { color: transparent !important; }
+  #rpt_date { display: none !important; }
+  #rpt_date_display { display: inline !important; }
 }
 </style>
 </head>
@@ -222,8 +224,11 @@ table.rf .right { text-align: right; }
           <td colspan="3"><input class="ri" id="rpt_req" placeholder="ชื่อ-นามสกุล / รหัส"></td>
           <td colspan="1" class="bold" style="text-align:center">ผู้อนุมัติ</td>
           <td colspan="4"><input class="ri" id="rpt_apr" placeholder="ชื่อ-นามสกุล / รหัส"></td>
-          <td colspan="2" class="right bold" style="border-right:none">วันที่ต้องการ</td>
-          <td colspan="2" style="border-left:none"><input class="ri" id="rpt_date" type="date"></td>
+          <td colspan="2" class="right bold" style="border-right:none">วันที่ต้องการ<br><span style="font-weight:normal; font-size:10px; color:#888">(วว/ดด/ปปปป)</span></td>
+          <td colspan="2" style="border-left:none; position:relative">
+            <input class="ri" id="rpt_date" type="date">
+            <span id="rpt_date_display" style="display:none; font-size:12px"></span>
+          </td>
         </tr>
 
         <!-- ACCOUNT ASSIGNMENT - Cost Center -->
@@ -604,6 +609,17 @@ document.getElementById('btnNext').addEventListener('click', function() {
   document.getElementById('rbody').innerHTML = h.join('');
   document.getElementById('pg1').classList.remove('active');
   document.getElementById('pg2').classList.add('active');
+});
+
+document.getElementById('rpt_date').addEventListener('change', function() {
+  var v = this.value; // YYYY-MM-DD
+  var disp = document.getElementById('rpt_date_display');
+  if (v) {
+    var parts = v.split('-');
+    disp.textContent = parts[2] + '/' + parts[1] + '/' + parts[0];
+  } else {
+    disp.textContent = '';
+  }
 });
 
 document.getElementById('btnBack').addEventListener('click', function() {
