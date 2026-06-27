@@ -398,9 +398,9 @@ table.rf .right { text-align: right; }
       <div class="card-hdr">&#128196; ข้อมูลใบเบิก</div>
       <div style="padding:16px">
         <div id="mr-page-info" style="font-size:15px; margin-bottom:20px; padding:12px 16px; background:#e8f0fe; border-left:4px solid #3b6fd4; border-radius:4px"></div>
-        <label style="font-weight:bold; font-size:13px">กรอกเลขที่ใบเบิก (ต้องตรงกับจำนวนแผ่นพอดี)</label>
-        <div style="font-size:11px; color:#666; margin:4px 0 10px">ตัวอย่าง: <code>0001-0005,0010-0014</code> (รวมกันต้องได้จำนวนแผ่นพอดี)</div>
-        <input id="mr-input" type="text" placeholder="เช่น 0001-0005,0010-0014"
+        <label style="font-weight:bold; font-size:13px">กรอกเลขที่ใบเบิก</label>
+        <div style="font-size:11px; color:#666; margin:4px 0 10px">กรอกเลขเดียว — ระบบจะเพิ่มหน้าให้อัตโนมัติ เช่น หน้า 1/3, 2/3, 3/3</div>
+        <input id="mr-input" type="text" placeholder="เช่น 00001"
           style="width:100%; box-sizing:border-box; padding:10px 12px; font-size:14px; border:2px solid #ccc; border-radius:6px; font-family:monospace">
         <div id="mr-error" style="color:#c00; font-size:12px; margin-top:6px; min-height:18px"></div>
         <div id="mr-preview" style="margin-top:12px; font-size:12px; color:#555; line-height:1.8"></div>
@@ -654,46 +654,6 @@ function countPrintPages() {
   return Math.ceil(realRows.length / ITEMS_PER_PAGE) || 1;
 }
 
-function parseMRRange(str) {
-  var nums = [];
-  var parts = str.split(',');
-  for (var i = 0; i < parts.length; i++) {
-    var p = parts[i].trim();
-    if (!p) continue;
-    var dash = p.indexOf('-');
-    if (dash > 0) {
-      var a = parseInt(p.substring(0, dash), 10);
-      var b = parseInt(p.substring(dash + 1), 10);
-      if (isNaN(a) || isNaN(b) || b < a) return null;
-      for (var n = a; n <= b; n++) nums.push(n);
-    } else {
-      var n2 = parseInt(p, 10);
-      if (isNaN(n2)) return null;
-      nums.push(n2);
-    }
-  }
-  return nums;
-}
-
-function padMR(n, sample) {
-  var s = String(n);
-  var pad = sample ? String(parseInt(sample, 10)).length : 4;
-  var width = Math.max(sample ? sample.length : 4, s.length);
-  while (s.length < width) s = '0' + s;
-  return s;
-}
-
-function getMRPad(str) {
-  var first = str.split(',')[0].trim().split('-')[0].trim();
-  return first.length || 4;
-}
-
-function formatMR(n, width) {
-  var s = String(n);
-  while (s.length < width) s = '0' + s;
-  return s;
-}
-
 function previewMR() {
   var val = document.getElementById('mr-input').value.trim();
   var errEl = document.getElementById('mr-error');
@@ -703,19 +663,9 @@ function previewMR() {
   if (!val) return;
 
   var pageCount = countPrintPages();
-  var nums = parseMRRange(val);
-  if (!nums) {
-    errEl.textContent = 'รูปแบบไม่ถูกต้อง ตัวอย่าง: 0001-0005,0010-0014';
-    return;
-  }
-  var width = getMRPad(val);
-  if (nums.length !== pageCount) {
-    errEl.textContent = 'จำนวนเลขที่กรอก (' + nums.length + ') ไม่ตรงกับจำนวนแผ่น (' + pageCount + ')';
-    return;
-  }
   var lines = [];
-  for (var i = 0; i < nums.length; i++) {
-    lines.push('แผ่น ' + (i+1) + ' → เลขที่ใบเบิก <strong>' + formatMR(nums[i], width) + '</strong>');
+  for (var i = 0; i < pageCount; i++) {
+    lines.push('แผ่น ' + (i+1) + ' → เลขที่ใบเบิก <strong>' + val + '</strong> หน้า ' + (i+1) + '/' + pageCount);
   }
   prevEl.innerHTML = lines.join('<br>');
 }
@@ -732,7 +682,7 @@ function cloneTheadWithValues(thead) {
   return theadClone;
 }
 
-function buildPrintPages(mrNumbers, mrWidth) {
+function buildPrintPages(mrNumber) {
   var container = document.getElementById('print-pages');
   container.innerHTML = '';
 
@@ -746,6 +696,16 @@ function buildPrintPages(mrNumbers, mrWidth) {
   for (var p = 0; p < pages; p++) {
     var pageDiv = document.createElement('div');
     pageDiv.className = 'print-page';
+
+    /* MR number label — outside the table, top-right */
+    var mrDiv = document.createElement('div');
+    mrDiv.style.cssText = 'text-align:right; font-family:Arial,sans-serif; margin-bottom:2px; padding-right:2px; line-height:1.4';
+    if (mrNumber) {
+      mrDiv.innerHTML = '<span style="font-size:13px; font-weight:bold">เลขที่ใบเบิก ' + mrNumber + '</span><br><span style="font-size:11px">หน้า ' + (p+1) + '/' + pages + '</span>';
+    } else {
+      mrDiv.innerHTML = '<span style="font-size:11px">หน้า ' + (p+1) + '/' + pages + '</span>';
+    }
+    pageDiv.appendChild(mrDiv);
 
     var tbl = document.createElement('table');
     tbl.className = 'rf';
@@ -766,15 +726,6 @@ function buildPrintPages(mrNumbers, mrWidth) {
       }
     }
     tbl.appendChild(tbody);
-
-    /* MR number label — outside the table, top-right */
-    if (mrNumbers && mrNumbers[p] !== undefined) {
-      var mrDiv = document.createElement('div');
-      mrDiv.style.cssText = 'text-align:right; font-size:11px; font-family:Arial,sans-serif; margin-bottom:2px; padding-right:2px';
-      mrDiv.textContent = 'เลขที่ใบเบิก ' + formatMR(mrNumbers[p], mrWidth);
-      pageDiv.appendChild(mrDiv);
-    }
-
     pageDiv.appendChild(tbl);
 
     /* footer text below table */
@@ -789,14 +740,12 @@ function buildPrintPages(mrNumbers, mrWidth) {
 
 document.getElementById('btnPrint').addEventListener('click', function() {
   var val = document.getElementById('mr-input').value.trim();
-  var pageCount = countPrintPages();
-  var nums = parseMRRange(val);
-  if (!nums || nums.length !== pageCount) {
-    document.getElementById('mr-error').textContent = 'กรุณากรอกเลขที่ใบเบิกให้ครบและถูกต้องก่อน Print';
+  if (!val) {
+    document.getElementById('mr-error').textContent = 'กรุณากรอกเลขที่ใบเบิกก่อน Print';
     return;
   }
-  var width = getMRPad(val);
-  buildPrintPages(nums, width);
+  document.getElementById('mr-error').textContent = '';
+  buildPrintPages(val);
   window.print();
 });
 
