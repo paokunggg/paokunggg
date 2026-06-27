@@ -630,7 +630,7 @@ document.getElementById('btnBack').addEventListener('click', function() {
 document.getElementById('btnToMR').addEventListener('click', function() {
   var pageCount = countPrintPages();
   document.getElementById('mr-page-info').innerHTML =
-    '&#128196; ใบเบิกพัสดุมีทั้งหมด <strong>' + pageCount + ' แผ่น</strong> — กรุณากรอกเลขที่ใบเบิกให้ครบ ' + pageCount + ' เลข';
+    '&#128196; ใบเบิกพัสดุมีทั้งหมด <strong>' + pageCount + ' แผ่น</strong> — กรุณากรอกเลขที่ใบแค่แผ่นเดียวที่จะใช้';
   document.getElementById('mr-input').value = '';
   document.getElementById('mr-error').textContent = '';
   document.getElementById('mr-preview').innerHTML = '';
