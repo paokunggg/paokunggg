@@ -701,7 +701,7 @@ function buildPrintPages(mrNumber) {
     var mrDiv = document.createElement('div');
     mrDiv.style.cssText = 'text-align:right; font-family:Arial,sans-serif; margin-bottom:2px; padding-right:2px; line-height:1.4';
     if (mrNumber) {
-      mrDiv.innerHTML = '<span style="font-size:13px; font-weight:bold">เลขที่ใบเบิก ' + mrNumber + '</span><br><span style="font-size:11px">หน้า ' + (p+1) + '/' + pages + '</span>';
+      mrDiv.innerHTML = '<span style="font-size:13px; font-weight:bold">เอกสารแนบ เลขที่ใบเบิก ' + mrNumber + '</span><br><span style="font-size:11px">หน้า ' + (p+1) + '/' + pages + '</span>';
     } else {
       mrDiv.innerHTML = '<span style="font-size:11px">หน้า ' + (p+1) + '/' + pages + '</span>';
     }
