@@ -157,6 +157,9 @@ table.rf .right { text-align: right; }
           <tbody id="ibody"></tbody>
         </table>
       </div>
+      <div style="padding:10px 12px; text-align:center; border-top:1px solid #e0e0e0">
+        <button class="btn" id="btnAddRows" style="background:#e8f0fe; color:#3b6fd4; border:1px solid #3b6fd4">&#10133; เพิ่มรายการ (+10)</button>
+      </div>
     </div>
   </div>
   <div class="botbar">
@@ -435,10 +438,12 @@ fetch('legend.json?v=' + Date.now())
     document.getElementById('loading-msg').textContent = 'โหลดข้อมูล legend ไม่ได้ — กรุณาตรวจสอบว่า legend.json อยู่ในโฟลเดอร์เดียวกัน';
   });
 
-function build() {
+function build(from, to) {
+  from = from || 1;
+  to = to || N;
   var tb = document.getElementById('ibody');
   var rows = [];
-  for (var i = 1; i <= N; i++) {
+  for (var i = from; i <= to; i++) {
     rows.push(
       '<tr>' +
       '<td>' + i + '</td>' +
@@ -452,8 +457,9 @@ function build() {
       '</tr>'
     );
   }
-  tb.innerHTML = rows.join('');
-  for (var j = 1; j <= N; j++) {
+  if (from === 1) tb.innerHTML = rows.join('');
+  else tb.insertAdjacentHTML('beforeend', rows.join(''));
+  for (var j = from; j <= to; j++) {
     (function(idx) {
       var linp = document.getElementById('lg' + idx);
       var qinp = document.getElementById('qt' + idx);
@@ -529,6 +535,14 @@ function ucnt() {
   }
   document.getElementById('ecnt').textContent = n ? '(' + n + ' รายการที่ถูกต้อง)' : '';
 }
+
+document.getElementById('btnAddRows').addEventListener('click', function() {
+  var from = N + 1;
+  N += 10;
+  build(from, N);
+  var el = document.getElementById('lg' + from);
+  if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.focus(); }
+});
 
 document.getElementById('btnClear').addEventListener('click', function() {
   if (!confirm('ล้างข้อมูลทั้งหมดใช่ไหม?')) return;
