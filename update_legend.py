@@ -20,7 +20,7 @@ SHEET = 'legend from typical'
 OUT = os.path.join(HERE, 'legend.json')
 
 # ลองไฟล์ตามลำดับ ใช้ไฟล์แรกที่เจอ
-SOURCES = ['legend ที่รวมรวมมา.xlsx', 'AR.xlsx']
+SOURCES = ['AR.xlsx', 'legend ที่รวมรวมมา.xlsx']
 
 
 def find_source():
